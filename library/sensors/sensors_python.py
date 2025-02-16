@@ -443,24 +443,27 @@ class Memory(sensors.Memory):
 
 class Disk(sensors.Disk):
     @staticmethod
-    def disk_usage_percent() -> float:
+    def disk_usage_percent(disk_path: str = "/") -> float:
         try:
-            return psutil.disk_usage("/").percent
+            return psutil.disk_usage(disk_path).percent
         except:
+            logger.warning(f"Disk {disk_path} dont exists.")
             return math.nan
 
     @staticmethod
-    def disk_used() -> int:  # In bytes
+    def disk_used(disk_path: str = "/") -> int:
         try:
-            return psutil.disk_usage("/").used
+            return psutil.disk_usage(disk_path).used
         except:
+            logger.warning(f"Disk {disk_path} dont exists.")
             return -1
 
     @staticmethod
-    def disk_free() -> int:  # In bytes
+    def disk_free(disk_path: str = "/") -> int:
         try:
-            return psutil.disk_usage("/").free
+            return psutil.disk_usage(disk_path).free
         except:
+            logger.warning(f"Disk {disk_path} dont exists.")
             return -1
 
 

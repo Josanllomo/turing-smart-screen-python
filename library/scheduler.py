@@ -136,7 +136,7 @@ def MemoryStats():
 
 
 @async_job("Disk_Stats")
-@schedule(timedelta(seconds=config.THEME_DATA['STATS'].get('DISK', {}).get("INTERVAL", 0)).total_seconds())
+@schedule(timedelta(seconds=config.THEME_DATA['STATS'].get('DISK_C', {}).get("INTERVAL", 0)).total_seconds())
 def DiskStats():
     # logger.debug("Refresh disk stats")
     stats.Disk.stats()

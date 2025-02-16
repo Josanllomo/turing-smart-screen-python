@@ -641,41 +641,54 @@ class Memory:
 
 
 class Disk:
-    last_values_disk_usage = []
-
+    last_values_disk_usage = {}
     @classmethod
     def stats(cls):
-        used = sensors.Disk.disk_used()
-        free = sensors.Disk.disk_free()
+        disk_keys = [key for key in config.THEME_DATA['STATS'] if key.startswith('DISK_')]
+        logger.info(f"Discos configurados: {disk_keys}")
+        for disk_key in disk_keys:
+            disk_path = disk_key[-1] + ":"
+            
+            logger.info(f"Actualizando estadisticas del disco {disk_key}")
 
-        disk_theme_data = config.THEME_DATA['STATS']['DISK']
+            used = sensors.Disk.disk_used(disk_path)
+            free = sensors.Disk.disk_free(disk_path)
+            
+            logger.info(f"Disco {disk_path} - Usado: {used}, Libre: {free}")
 
-        disk_usage_percent = sensors.Disk.disk_usage_percent()
-        save_last_value(disk_usage_percent, cls.last_values_disk_usage,
-                        disk_theme_data['USED']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
-        display_themed_progress_bar(disk_theme_data['USED']['GRAPH'], disk_usage_percent)
-        display_themed_percent_radial_bar(disk_theme_data['USED']['RADIAL'], disk_usage_percent)
-        display_themed_percent_value(disk_theme_data['USED']['PERCENT_TEXT'], disk_usage_percent)
-        display_themed_line_graph(disk_theme_data['USED']['LINE_GRAPH'], cls.last_values_disk_usage)
+            disk_theme_data = config.THEME_DATA['STATS'][disk_key]
 
-        display_themed_value(
-            theme_data=disk_theme_data['USED']['TEXT'],
-            value=int(used / 1000000000),
-            min_size=5,
-            unit=" G"
-        )
-        display_themed_value(
-            theme_data=disk_theme_data['TOTAL']['TEXT'],
-            value=int((free + used) / 1000000000),
-            min_size=5,
-            unit=" G"
-        )
-        display_themed_value(
-            theme_data=disk_theme_data['FREE']['TEXT'],
-            value=int(free / 1000000000),
-            min_size=5,
-            unit=" G"
-        )
+            disk_usage_percent = sensors.Disk.disk_usage_percent(disk_path)
+            logger.info(f"Disco {disk_path} - Porcentaje de uso: {disk_usage_percent}")
+
+            if disk_key not in cls.last_values_disk_usage:
+                cls.last_values_disk_usage[disk_key] = last_values_list(DEFAULT_HISTORY_SIZE)
+
+            save_last_value(disk_usage_percent, cls.last_values_disk_usage[disk_key], disk_theme_data['USED']['LINE_GRAPH'].get("HISTORY_SIZE", DEFAULT_HISTORY_SIZE))
+            display_themed_progress_bar(disk_theme_data['USED']['GRAPH'], disk_usage_percent)
+            display_themed_percent_radial_bar(disk_theme_data['USED']['RADIAL'], disk_usage_percent)
+            display_themed_percent_value(disk_theme_data['USED']['PERCENT_TEXT'], disk_usage_percent)
+            display_themed_line_graph(disk_theme_data['USED']['LINE_GRAPH'], cls.last_values_disk_usage[disk_key])
+
+        
+            display_themed_value(
+                theme_data=disk_theme_data['USED']['TEXT'],
+                value=int(used / 1000000000),
+                min_size=5,
+                unit=" G"
+            )
+            display_themed_value(
+                theme_data=disk_theme_data['TOTAL']['TEXT'],
+                value=int((free + used) / 1000000000),
+                min_size=5,
+                unit=" G"
+            )
+            display_themed_value(
+                theme_data=disk_theme_data['FREE']['TEXT'],
+                value=int(free / 1000000000),
+                min_size=5,
+                unit=" G"
+            )
 
 
 class Net:
